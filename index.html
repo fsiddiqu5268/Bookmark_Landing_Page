@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f5">
+  <title>Bookmarks</title>
+  <style>
+    :root { color-scheme: light; --ink:#172c2a; --muted:#687873; --paper:#f4f7f5; --line:#dce6e1; --green:#146b57; --green-soft:#e2f2eb; --coral:#d97056; --yellow:#efc45e; --shadow:0 7px 20px rgb(23 44 42 / 5%); }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:14px/1.45 "Aptos","Segoe UI",sans-serif; }
+    button,input { font:inherit; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; min-height:68px; padding:0 5vw; border-bottom:1px solid var(--line); background:#fff; }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:700; }
+    .brand-mark { display:grid; width:34px; aspect-ratio:1; place-items:center; border-radius:9px; background:var(--green); color:#fff; font-size:12px; }
+    .top-note { color:var(--muted); font-size:12px; }
+    main { width:min(1440px,100%); margin:auto; padding:38px 5vw 60px; }
+    .intro { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:26px; }
+    .eyebrow { margin:0 0 7px; color:var(--green); font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { margin:0; font:400 clamp(32px,4vw,46px)/1.08 Georgia,"Times New Roman",serif; }
+    .intro-copy { max-width:350px; margin:0; color:var(--muted); line-height:1.6; }
+    .toolbar { display:grid; grid-template-columns:minmax(220px,1fr) auto; gap:12px; margin-bottom:20px; }
+    .search-wrap { position:relative; }
+    .search-icon { position:absolute; top:50%; left:14px; color:var(--muted); transform:translateY(-50%); pointer-events:none; }
+    .search { width:100%; height:46px; padding:0 14px 0 40px; border:1px solid var(--line); border-radius:6px; outline:none; background:#fff; color:var(--ink); }
+    .search:focus { border-color:var(--green); box-shadow:0 0 0 3px rgb(20 107 87 / 10%); }
+    .view-toggle { display:flex; height:46px; padding:4px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    .view-toggle button { min-width:42px; border:0; border-radius:4px; background:transparent; color:var(--muted); cursor:pointer; }
+    .view-toggle button[aria-pressed="true"] { background:var(--green-soft); color:var(--green); }
+    .layout { display:grid; grid-template-columns:230px minmax(0,1fr); align-items:start; gap:24px; }
+    aside { position:sticky; top:16px; max-height:calc(100vh - 32px); overflow:auto; padding:15px 10px 12px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    .side-title { display:flex; justify-content:space-between; padding:0 9px 10px; color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+    .folder-list { display:grid; gap:2px; }
+    .folder-button { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:34px; gap:8px; padding:6px 9px; border:0; border-radius:4px; background:transparent; color:#314643; text-align:left; cursor:pointer; }
+    .folder-button:hover { background:#f3f7f5; }
+    .folder-button[aria-current="true"] { background:var(--green-soft); color:var(--green); font-weight:650; }
+    .folder-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .folder-count { color:var(--muted); font-size:10px; }
+    .content-head { display:flex; align-items:end; justify-content:space-between; gap:12px; margin:2px 0 14px; }
+    .content-head h2 { margin:0; font-size:18px; font-weight:650; }
+    .content-head p { margin:3px 0 0; color:var(--muted); font-size:12px; }
+    .bookmark-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(225px,1fr)); gap:10px; }
+    .bookmark-card { display:flex; min-width:0; min-height:123px; flex-direction:column; justify-content:space-between; gap:15px; padding:15px; border:1px solid var(--line); border-radius:6px; background:#fff; box-shadow:var(--shadow); color:inherit; text-decoration:none; animation:rise 220ms both; transition:transform 140ms ease,border-color 140ms ease,box-shadow 140ms ease; }
+    .bookmark-card:nth-child(5n+2) .site-mark { background:#fff0e9; color:#a74f36; }
+    .bookmark-card:nth-child(5n+3) .site-mark { background:#fff5d9; color:#86621b; }
+    .bookmark-card:hover { transform:translateY(-2px); border-color:#a7c7b9; box-shadow:0 10px 22px rgb(23 44 42 / 9%); }
+    .card-top { display:flex; justify-content:space-between; align-items:start; gap:10px; }
+    .site-mark { display:grid; width:31px; flex:0 0 31px; aspect-ratio:1; place-items:center; border-radius:7px; background:var(--green-soft); color:var(--green); font-size:10px; font-weight:700; text-transform:uppercase; }
+    .external { color:#91a29d; }
+    .bookmark-title { display:-webkit-box; overflow:hidden; margin:11px 0 0; font-size:13px; font-weight:650; line-height:1.4; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+    .card-meta { display:flex; justify-content:space-between; min-width:0; gap:8px; color:var(--muted); font-size:10px; }
+    .card-folder,.card-host { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .card-folder { color:var(--green); }
+    .bookmark-grid.list { grid-template-columns:1fr; gap:6px; }
+    .bookmark-grid.list .bookmark-card { min-height:68px; flex-direction:row; align-items:center; gap:13px; padding:11px 14px; }
+    .bookmark-grid.list .card-top { flex:0 0 31px; }
+    .bookmark-grid.list .bookmark-title { margin:0; }
+    .bookmark-grid.list .card-meta { width:min(36%,340px); flex:0 0 min(36%,340px); }
+    .empty,.error { padding:45px 20px; border:1px dashed var(--line); border-radius:6px; color:var(--muted); text-align:center; line-height:1.7; }
+    .error strong { display:block; margin-bottom:7px; color:var(--ink); }
+    @keyframes rise { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    @media(max-width:760px) { .topbar{padding:0 20px}.top-note{display:none}main{padding:30px 20px 46px}.intro{align-items:start;flex-direction:column;gap:12px}.layout{grid-template-columns:1fr;gap:16px}aside{position:static;max-height:none;padding:10px;overflow:visible}.folder-list{display:flex;overflow-x:auto;padding-bottom:2px}.folder-button{width:auto;flex:0 0 auto;gap:10px}.folder-name{max-width:170px}.side-title{padding-bottom:7px}.bookmark-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))} }
+    @media(max-width:480px) { .toolbar{grid-template-columns:1fr auto}.bookmark-grid{grid-template-columns:1fr}.bookmark-grid.list .card-meta{display:none} }
+    @media(max-width:760px) {
+      .layout { grid-template-columns:minmax(0,1fr); }
+      .layout > section,.bookmark-grid { min-width:0; }
+      .bookmark-grid.list .bookmark-title { min-width:0; flex:1; overflow-wrap:anywhere; }
+      .bookmark-grid.list .card-meta { min-width:0; flex:0 1 36%; }
+    }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important} }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="brand-mark">B</span><span>Bookmarks</span></div><span class="top-note">A home for your saved links</span></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">Personal library</p><h1>Favourites, all in one place.</h1></div><p class="intro-copy">Browse your bookmark folders or search titles and web addresses. Links open in a new tab.</p></section>
+    <section class="toolbar" aria-label="Bookmark controls">
+      <label class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input class="search" id="search" type="search" placeholder="Search titles, folders, or addresses" autocomplete="off" aria-label="Search bookmarks"></label>
+      <div class="view-toggle" role="group" aria-label="Bookmark layout"><button type="button" data-view="grid" aria-label="Grid view" aria-pressed="true" title="Grid view">▦</button><button type="button" data-view="list" aria-label="List view" aria-pressed="false" title="List view">☷</button></div>
+    </section>
+    <div class="layout">
+      <aside aria-label="Bookmark folders"><div class="side-title"><span>Folders</span><span id="folder-total"></span></div><nav class="folder-list" id="folders"></nav></aside>
+      <section aria-label="Bookmarks"><div class="content-head"><div><h2 id="section-title">All bookmarks</h2><p id="summary">Loading your collection...</p></div></div><div class="bookmark-grid" id="bookmarks"></div></section>
+    </div>
+  </main>
+  <script>
+    const searchInput = document.querySelector('#search');
+    const folderList = document.querySelector('#folders');
+    const bookmarkGrid = document.querySelector('#bookmarks');
+    const sectionTitle = document.querySelector('#section-title');
+    const summary = document.querySelector('#summary');
+    const folderTotal = document.querySelector('#folder-total');
+    let bookmarks = [];
+    let folders = [];
+    let selectedPath = [];
+    let duplicateCount = 0;
+
+    function directChild(element, tag) {
+      return Array.from(element.children).find(child => child.tagName === tag);
+    }
+
+    function parseFolder(folder, parentPath = []) {
+      let activePath = parentPath;
+      for (const child of folder.children) {
+        if (child.tagName === 'DT') {
+          const heading = directChild(child, 'H3');
+          if (heading) activePath = [...parentPath, heading.textContent.trim()];
+          const link = directChild(child, 'A');
+          if (link) {
+            const href = link.getAttribute('href');
+            if (href) bookmarks.push({ title: link.textContent.trim() || href, url: href, path: activePath });
+          }
+          const nestedFolder = directChild(child, 'DL');
+          if (nestedFolder) parseFolder(nestedFolder, activePath);
+        } else if (child.tagName === 'DL') {
+          parseFolder(child, activePath);
+        }
+      }
+    }
+
+    function normalizedUrl(value) {
+      try { return new URL(value).href; } catch { return value.trim(); }
+    }
+
+    function removeDuplicates(items) {
+      const seen = new Set();
+      return items.filter(item => {
+        const key = normalizedUrl(item.url);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function getFolders() {
+      const counts = new Map();
+      for (const bookmark of bookmarks) {
+        for (let depth = 1; depth <= bookmark.path.length; depth++) {
+          const path = bookmark.path.slice(0, depth);
+          const key = JSON.stringify(path);
+          counts.set(key, (counts.get(key) || 0) + 1);
+        }
+      }
+      return [...counts].map(([key, count]) => ({ path: JSON.parse(key), count }));
+    }
+
+    function pathMatches(bookmark, path) {
+      return path.every((part, index) => bookmark.path[index] === part);
+    }
+
+    function renderFolders() {
+      folderList.replaceChildren();
+      const all = document.createElement('button');
+      all.type = 'button';
+      all.className = 'folder-button';
+      all.setAttribute('aria-current', String(selectedPath.length === 0));
+      const allName = document.createElement('span');
+      allName.className = 'folder-name';
+      allName.textContent = 'All bookmarks';
+      const allCount = document.createElement('span');
+      allCount.className = 'folder-count';
+      allCount.textContent = bookmarks.length.toLocaleString();
+      all.append(allName, allCount);
+      all.addEventListener('click', () => { selectedPath = []; render(); });
+      folderList.append(all);
+      for (const folder of folders) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'folder-button';
+        button.style.paddingLeft = `${9 + (folder.path.length - 1) * 13}px`;
+        button.setAttribute('aria-current', String(JSON.stringify(selectedPath) === JSON.stringify(folder.path)));
+        const name = document.createElement('span');
+        name.className = 'folder-name';
+        name.textContent = folder.path.at(-1);
+        const count = document.createElement('span');
+        count.className = 'folder-count';
+        count.textContent = folder.count.toLocaleString();
+        button.append(name, count);
+        button.addEventListener('click', () => { selectedPath = folder.path; render(); });
+        folderList.append(button);
+      }
+    }
+
+    function hostFor(url) {
+      try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
+    }
+
+    function render() {
+      const query = searchInput.value.trim().toLocaleLowerCase();
+      const visible = bookmarks.filter(bookmark => {
+        const folderMatch = !selectedPath.length || pathMatches(bookmark, selectedPath);
+        const text = `${bookmark.title} ${bookmark.url} ${bookmark.path.join(' ')}`.toLocaleLowerCase();
+        return folderMatch && (!query || text.includes(query));
+      });
+      sectionTitle.textContent = selectedPath.at(-1) || 'All bookmarks';
+      summary.textContent = `${visible.length.toLocaleString()} shown · ${bookmarks.length.toLocaleString()} unique links · ${duplicateCount.toLocaleString()} duplicates removed`;
+      renderFolders();
+      bookmarkGrid.replaceChildren();
+      if (!visible.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No bookmarks match this search.';
+        bookmarkGrid.append(empty);
+        return;
+      }
+      const fragment = document.createDocumentFragment();
+      for (const [index, bookmark] of visible.entries()) {
+        const card = document.createElement('a');
+        card.className = 'bookmark-card';
+        card.href = bookmark.url;
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+        card.style.animationDelay = `${Math.min(index, 18) * 10}ms`;
+        const top = document.createElement('div');
+        top.className = 'card-top';
+        const mark = document.createElement('span');
+        mark.className = 'site-mark';
+        mark.setAttribute('aria-hidden', 'true');
+        mark.textContent = hostFor(bookmark.url).slice(0, 2);
+        const external = document.createElement('span');
+        external.className = 'external';
+        external.setAttribute('aria-hidden', 'true');
+        external.textContent = '↗';
+        top.append(mark, external);
+        const title = document.createElement('h3');
+        title.className = 'bookmark-title';
+        title.textContent = bookmark.title;
+        const meta = document.createElement('div');
+        meta.className = 'card-meta';
+        const path = document.createElement('span');
+        path.className = 'card-folder';
+        path.textContent = bookmark.path.slice(1).join(' / ') || bookmark.path[0] || 'Unfiled';
+        const host = document.createElement('span');
+        host.className = 'card-host';
+        host.textContent = hostFor(bookmark.url);
+        meta.append(path, host);
+        card.append(top, title, meta);
+        fragment.append(card);
+      }
+      bookmarkGrid.append(fragment);
+    }
+
+    async function loadBookmarks() {
+      try {
+        const response = await fetch('./bookmarks.json');
+        if (!response.ok) throw new Error(`Could not load bookmarks.json (${response.status}).`);
+        const data = await response.json();
+        bookmarks = data.bookmarks;
+        duplicateCount = data.duplicatesRemoved;
+        folders = getFolders();
+        folderTotal.textContent = folders.length.toLocaleString();
+        render();
+      } catch (error) {
+        summary.textContent = 'The bookmark export could not be read.';
+        bookmarkGrid.className = 'error';
+        const message = document.createElement('div');
+        const title = document.createElement('strong');
+        title.textContent = 'The public bookmark data is not available.';
+        message.append(title, document.createTextNode(error.message));
+        bookmarkGrid.replaceChildren(message);
+      }
+    }
+
+    searchInput.addEventListener('input', render);
+    document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
+      const isList = button.dataset.view === 'list';
+      bookmarkGrid.classList.toggle('list', isList);
+      document.querySelectorAll('[data-view]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    }));
+    loadBookmarks();
+  </script>
+</body>
+</html>
