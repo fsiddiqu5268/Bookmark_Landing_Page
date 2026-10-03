@@ -242,7 +242,7 @@
 
     async function loadBookmarks() {
       try {
-        const response = await fetch('./bookmarks.json');
+        const response = await fetch(`./bookmarks.json?v=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) throw new Error(`Could not load bookmarks.json (${response.status}).`);
         const data = await response.json();
         bookmarks = data.bookmarks;
